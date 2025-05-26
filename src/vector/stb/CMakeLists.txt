@@ -1,3 +1,16 @@
+# 创建静态库以避免未定义符号问题
+# add_library(rlottie-image-loade-static STATIC
+#             stb_image.cpp
+#            )
+#            
+# # 直接导出符号，避免被隐藏
+# if(NOT MSVC)
+#     target_compile_options(rlottie-image-loade-static PUBLIC
+#                           -fvisibility=default
+#                           )
+# endif()
+
+# 如果需要安装动态库
 if(LOTTIE_MODULE)
     add_library(rlottie-image-loader SHARED
                 stb_image.cpp
@@ -27,5 +40,5 @@ else()
     target_sources(rlottie
         PRIVATE
             "${CMAKE_CURRENT_LIST_DIR}/stb_image.cpp"
-        )
+           )
 endif()

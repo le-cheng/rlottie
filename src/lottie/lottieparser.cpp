@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-//#define DEBUG_PARSER
+#define DEBUG_PARSER
 
 // This parser implements JSON token-by-token parsing with an API that is
 // more direct; we don't have to create  handler object and
@@ -438,9 +438,9 @@ const char *LottieParserImpl::NextObjectKey()
      * so ignore those and don't put parser in the error state.
      * */
     if (st_ == kExitingArray || st_ == kEnteringObject) {
-        // #ifdef DEBUG_PARSER
-        //         vDebug<<"Object: Exiting nested loop";
-        // #endif
+        #ifdef DEBUG_PARSER
+                vDebug<<"Object: Exiting nested loop";
+        #endif
         return nullptr;
     }
 
@@ -1181,7 +1181,7 @@ model::Object *LottieParserImpl::parseObjectTypeAttr()
         return nullptr;
     } else {
 #ifdef DEBUG_PARSER
-        vDebug << "The Object Type not yet handled = " << type;
+        vWarning << "The Object Type not yet handled = " << type;
 #endif
         return nullptr;
     }

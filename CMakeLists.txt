@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.3 )
+cmake_minimum_required( VERSION 3.7)
 
 #declare project
 project( rlottie VERSION 0.2 LANGUAGES C CXX ASM)
@@ -29,21 +29,26 @@ set_target_properties(rlottie PROPERTIES
 add_library(rlottie::rlottie ALIAS rlottie)
 
 option(LOTTIE_MODULE "Enable LOTTIE MODULE SUPPORT" ON)
-option(LOTTIE_THREAD "Enable LOTTIE THREAD SUPPORT" ON)
+option(LOTTIE_THREAD "Enable LOTTIE THREAD SUPPORT" OFF)
 option(LOTTIE_CACHE "Enable LOTTIE CACHE SUPPORT" ON)
 option(LOTTIE_TEST "Build LOTTIE AUTOTESTS" OFF)
 option(LOTTIE_CCACHE "Enable LOTTIE ccache SUPPORT" OFF)
 option(LOTTIE_ASAN "Compile with asan" OFF)
+option(LOTTIE_QT "Enable Qt Rendering Backend" ON)
 
 set(LOTTIE_MODULE_PATH "${CMAKE_SHARED_LIBRARY_PREFIX}rlottie-image-loader${CMAKE_SHARED_LIBRARY_SUFFIX}"
     CACHE STRING "Absolute or relative path to dynamic loader plugin.")
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config.h.in config.h)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+# 将配置目录添加到所有目标的包含路径中
+# include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 target_include_directories(rlottie
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>
     PRIVATE
         "${CMAKE_CURRENT_BINARY_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src"
     )
 
 #declare common target compilation options
@@ -137,6 +142,53 @@ endif (NOT LIB_INSTALL_DIR)
 #declare source and include files
 add_subdirectory(inc)
 add_subdirectory(src)
+
+# 静态链接图像加载模块
+# if (TARGET rlottie-image-loader)
+#     target_link_libraries(rlottie PRIVATE rlottie-image-loader)
+# endif()
+
+# 如果指定了模块加载方式，需要静态链接image-loader
+# if (NOT LOTTIE_MODULE)
+#     target_sources(rlottie PRIVATE src/vector/stb/stb_image.cpp)
+# endif()
+
+# 如果启用了Qt渲染后端，添加Qt依赖
+if (LOTTIE_QT)
+    message(STATUS "Configuring Qt rendering backend")
+    
+    # 设置Qt的路径
+    set(CMAKE_PREFIX_PATH "/home/lecheng/Qt5.14.2/5.14.2/gcc_64/lib/cmake" ${CMAKE_PREFIX_PATH})
+    
+    # 查找Qt5，添加Widgets组件
+    find_package(Qt5 COMPONENTS Core Gui Widgets QUIET)
+    
+    if (Qt5_FOUND)
+        message(STATUS "Found Qt5: ${Qt5_DIR}")
+        
+        # 添加Qt头文件
+        target_include_directories(rlottie PRIVATE 
+            ${Qt5Core_INCLUDE_DIRS}
+            ${Qt5Gui_INCLUDE_DIRS}
+            ${Qt5Widgets_INCLUDE_DIRS}
+        )
+        
+        # 显式添加Qt渲染器源文件
+        target_sources(rlottie PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/vector/vpainter_qt.cpp"
+        )
+        
+        # 链接Qt库，添加Widgets
+        target_link_libraries(rlottie PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets)
+    else()
+        message(WARNING "Qt5 not found, disabling Qt rendering backend")
+        set(LOTTIE_QT OFF CACHE BOOL "Enable Qt Rendering Backend" FORCE)
+        
+        # 重新配置config.h确保禁用Qt后端
+        configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+    endif()
+endif()
+
 add_subdirectory(example)
 
 if (LOTTIE_TEST)
@@ -166,6 +218,14 @@ install( TARGETS rlottie EXPORT rlottie-targets
          ARCHIVE     DESTINATION    ${LIB_INSTALL_DIR}
          INCLUDES    DESTINATION    include
        )
+
+# 将rlottie-image-loader也添加到导出集合中
+#if(TARGET rlottie-image-loader)
+#    install(TARGETS rlottie-image-loader EXPORT rlottie-targets
+#            LIBRARY     DESTINATION    ${LIB_INSTALL_DIR}
+#            ARCHIVE     DESTINATION    ${LIB_INSTALL_DIR}
+#           )
+#endif()
 
 #install config file.
 

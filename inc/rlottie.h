@@ -26,6 +26,7 @@
 #include <future>
 #include <vector>
 #include <memory>
+#include <functional>
 
 #if defined _WIN32 || defined __CYGWIN__
   #ifdef RLOTTIE_BUILD
@@ -46,6 +47,27 @@ struct LOTNode;
 struct LOTLayerNode;
 
 namespace rlottie {
+
+/**
+ *  @brief 定义可用的渲染后端类型
+ */
+enum class RenderBackend {
+    CPU,    /*!< 默认的CPU软件渲染 */
+    Qt,     /*!< 使用Qt的QPainter渲染 */
+    Custom  /*!< 自定义渲染后端 */
+};
+
+/**
+ *  @brief 配置rlottie全局渲染后端
+ * 
+ *  设置所有新创建的Animation实例默认使用的渲染后端。
+ *  不会影响已经创建的Animation实例。
+ *
+ *  @param[in] backend 要使用的渲染后端类型
+ *
+ *  @internal
+ */
+RLOTTIE_API void configureRenderBackend(RenderBackend backend);
 
 /**
  *  @brief Configures rlottie model cache policy.
@@ -460,6 +482,26 @@ public:
     const LayerInfoList& layers() const;
 
     /**
+     *  @brief Sets the renderer backend to be used for this animation instance.
+     *
+     *  @param[in] backend The render backend to use
+     *
+     *  @see RenderBackend
+     *  @internal
+     */
+    void setRenderBackend(RenderBackend backend);
+
+    /**
+     *  @brief Returns the current renderer backend used by this animation.
+     *
+     *  @return The current render backend
+     *
+     *  @see RenderBackend
+     *  @internal
+     */
+    RenderBackend renderBackend() const;
+
+    /**
      *  @brief Sets property value for the specified {@link KeyPath}. This {@link KeyPath} can resolve
      *  to multiple contents. In that case, the callback's value will apply to all of them.
      *
@@ -522,6 +564,7 @@ template<> struct MapType<std::integral_constant<Property, Property::TrPosition>
 template<> struct MapType<std::integral_constant<Property, Property::TrScale>>: Size_Type{};
 template<> struct MapType<std::integral_constant<Property, Property::TrimStart>>: Float_Type{};
 template<> struct MapType<std::integral_constant<Property, Property::TrimEnd>>: Point_Type{};
+
 }  // namespace lotplayer
 
 #endif  // _RLOTTIE_H_

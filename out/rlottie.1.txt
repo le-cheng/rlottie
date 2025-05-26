@@ -1,0 +1,379 @@
+[2025-05-23 09:41:13.878451][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseComposition:682] Composition Attribute Skipped : nm
+[2025-05-23 09:41:13.878454][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseComposition:682] Composition Attribute Skipped : ddd
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.878709][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.878716][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.878767][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.878772][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.878816][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.878824][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.878866][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.878869][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.878884][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseLayer:1035] Layer Attribute Skipped : td
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.878929][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.878933][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879012][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879015][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879058][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879062][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879073][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseLayer:1035] Layer Attribute Skipped : td
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879116][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879122][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879179][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879183][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879218][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879221][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879283][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879286][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879320][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879324][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879366][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879371][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879408][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879411][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879420][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseLayer:1035] Layer Attribute Skipped : td
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879452][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879456][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879510][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879513][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Shape property ignored :ix
+shape property ignored = a
+shape property ignored = ix
+Shape property ignored :mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop
+[2025-05-23 09:41:13.879553][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseObjectTypeAttr:1180] Merge Path is not supported yet
+[2025-05-23 09:41:13.879555][WARN][126832407937728][/home/lecheng/workspace/e_lottie/rlottie/src/lottie/lottieparser.cpp:parseFillObject:1622] Fill property skipped = mn
+Object: Exiting nested loop
+Object: Exiting nested loop
+Object: Exiting nested loop

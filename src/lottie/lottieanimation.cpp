@@ -29,6 +29,14 @@
 using namespace rlottie;
 using namespace rlottie::internal;
 
+// 全局默认渲染后端
+static RenderBackend gDefaultRenderBackend = RenderBackend::CPU;
+
+RLOTTIE_API void rlottie::configureRenderBackend(RenderBackend backend)
+{
+    gDefaultRenderBackend = backend;
+}
+
 RLOTTIE_API void rlottie::configureModelCacheSize(size_t cacheSize)
 {
     internal::model::configureModelCacheSize(cacheSize);
@@ -70,6 +78,18 @@ public:
     const MarkerList &markers() const { return mModel->markers(); }
     void              setValue(const std::string &keypath, LOTVariant &&value);
     void              removeFilter(const std::string &keypath, Property prop);
+    
+    // 设置渲染后端
+    void setRenderBackend(RenderBackend backend) 
+    {
+        mRenderer->setRenderBackend(static_cast<RenderType>(backend));
+    }
+    
+    // 获取当前渲染后端
+    RenderBackend renderBackend() const 
+    {
+        return static_cast<RenderBackend>(mRenderer->renderBackend());
+    }
 
 private:
     mutable LayerInfoList                  mLayerList;
@@ -130,6 +150,11 @@ void AnimationImpl::init(std::shared_ptr<model::Composition> composition)
     mModel = composition.get();
     mRenderer = std::make_unique<renderer::Composition>(composition);
     mRenderInProgress = false;
+    
+    // 设置为全局默认渲染后端
+    if (gDefaultRenderBackend != RenderBackend::CPU) {
+        setRenderBackend(gDefaultRenderBackend);
+    }
 }
 
 #ifdef LOTTIE_THREAD_SUPPORT
@@ -486,10 +511,20 @@ void initLogging()
 #if defined(__ARM_NEON__)
     set_log_level(LogLevel::OFF);
 #else
-    initialize(GuaranteedLogger(), "/tmp/", "rlottie", 1);
+    initialize(GuaranteedLogger{}, "/home/lecheng/workspace/e_lottie/rlottie/out/", "rlottie", 1);
     set_log_level(LogLevel::INFO);
 #endif
 }
 
 V_CONSTRUCTOR_FUNCTION(initLogging)
 #endif
+
+void Animation::setRenderBackend(RenderBackend backend)
+{
+    d->setRenderBackend(backend);
+}
+
+RenderBackend Animation::renderBackend() const
+{
+    return d->renderBackend();
+}

@@ -20,14 +20,56 @@
  * SOFTWARE.
  */
 
+// 必须首先包含config.h以确保宏定义正确
+#if defined(__has_include)
+#  if __has_include("config.h")
+#    include "config.h"
+#  endif
+#endif
+
+// 然后包含vglobal.h确保命名空间正确定义
+#include "vglobal.h"
+
+// 再包含其他头文件
 #include "vpainter.h"
 #include <algorithm>
+#include <memory>
 
+// 如果C++14的std::make_unique不可用，提供自己的实现
+#if __cplusplus < 201402L
+namespace std {
+    template<typename T, typename... Args>
+    unique_ptr<T> make_unique(Args&&... args) {
+        return unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+}
+#endif
+
+// 引入Qt渲染器头文件，处理条件编译
+#if defined(LOTTIE_QT)
+#include "vpainter_qt.h"
+#endif
 
 V_BEGIN_NAMESPACE
 
+// 创建特定类型的渲染器实例
+std::unique_ptr<VPainter> VPainter::create(RenderType type)
+{
+    switch (type) {
+    case RenderType::CPU:
+        return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));
+#if defined(LOTTIE_QT)
+    case RenderType::Qt:
+        return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterQt()));
+#endif
+    default:
+        // 默认返回CPU渲染器
+        return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));
+    }
+}
 
-void VPainter::drawRle(const VPoint &, const VRle &rle)
+// VPainterCPU实现
+void VPainterCPU::drawRle(const VPoint &, const VRle &rle)
 {
     if (rle.empty()) return;
     // mSpanData.updateSpanFunc();
@@ -39,7 +81,7 @@ void VPainter::drawRle(const VPoint &, const VRle &rle)
                   &mSpanData);
 }
 
-void VPainter::drawRle(const VRle &rle, const VRle &clip)
+void VPainterCPU::drawRle(const VRle &rle, const VRle &clip)
 {
     if (rle.empty() || clip.empty()) return;
 
@@ -77,7 +119,7 @@ static void fillRect(const VRect &r, VSpanData *data)
     }
 }
 
-void VPainter::drawBitmapUntransform(const VRect &  target,
+void VPainterCPU::drawBitmapUntransform(const VRect &  target,
                                          const VBitmap &bitmap,
                                          const VRect &  source,
                                          uint8_t        const_alpha)
@@ -92,11 +134,12 @@ void VPainter::drawBitmapUntransform(const VRect &  target,
     fillRect(target, &mSpanData);
 }
 
-VPainter::VPainter(VBitmap *buffer)
+VPainterCPU::VPainterCPU(VBitmap *buffer)
 {
     begin(buffer);
 }
-bool VPainter::begin(VBitmap *buffer)
+
+bool VPainterCPU::begin(VBitmap *buffer)
 {
     mBuffer.prepare(buffer);
     mSpanData.init(&mBuffer);
@@ -104,29 +147,30 @@ bool VPainter::begin(VBitmap *buffer)
     mBuffer.clear();
     return true;
 }
-void VPainter::end() {}
 
-void VPainter::setDrawRegion(const VRect &region)
+void VPainterCPU::end() {}
+
+void VPainterCPU::setDrawRegion(const VRect &region)
 {
     mSpanData.setDrawRegion(region);
 }
 
-void VPainter::setBrush(const VBrush &brush)
+void VPainterCPU::setBrush(const VBrush &brush)
 {
     mSpanData.setup(brush);
 }
 
-void VPainter::setBlendMode(BlendMode mode)
+void VPainterCPU::setBlendMode(BlendMode mode)
 {
     mSpanData.mBlendMode = mode;
 }
 
-VRect VPainter::clipBoundingRect() const
+VRect VPainterCPU::clipBoundingRect() const
 {
     return mSpanData.clipRect();
 }
 
-void VPainter::drawBitmap(const VPoint &point, const VBitmap &bitmap,
+void VPainterCPU::drawBitmap(const VPoint &point, const VBitmap &bitmap,
                           const VRect &source, uint8_t const_alpha)
 {
     if (!bitmap.valid()) return;
@@ -135,7 +179,7 @@ void VPainter::drawBitmap(const VPoint &point, const VBitmap &bitmap,
                bitmap, source, const_alpha);
 }
 
-void VPainter::drawBitmap(const VRect &target, const VBitmap &bitmap,
+void VPainterCPU::drawBitmap(const VRect &target, const VBitmap &bitmap,
                           const VRect &source, uint8_t const_alpha)
 {
     if (!bitmap.valid()) return;
@@ -150,7 +194,7 @@ void VPainter::drawBitmap(const VRect &target, const VBitmap &bitmap,
     }
 }
 
-void VPainter::drawBitmap(const VPoint &point, const VBitmap &bitmap,
+void VPainterCPU::drawBitmap(const VPoint &point, const VBitmap &bitmap,
                           uint8_t const_alpha)
 {
     if (!bitmap.valid()) return;
@@ -160,7 +204,7 @@ void VPainter::drawBitmap(const VPoint &point, const VBitmap &bitmap,
                const_alpha);
 }
 
-void VPainter::drawBitmap(const VRect &rect, const VBitmap &bitmap,
+void VPainterCPU::drawBitmap(const VRect &rect, const VBitmap &bitmap,
                           uint8_t const_alpha)
 {
     if (!bitmap.valid()) return;

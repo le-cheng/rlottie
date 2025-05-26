@@ -172,13 +172,16 @@ bool renderer::Composition::render(const rlottie::Surface &surface)
                int(surface.drawRegionHeight()));
     mRootLayer->preprocess(clip);
 
-    VPainter painter(&mSurface);
+    // 创建渲染器实例（根据配置选择渲染后端）
+    auto painter = VPainter::create(mRenderBackend);
+    painter->begin(&mSurface);
+    
     // set sub surface area for drawing.
-    painter.setDrawRegion(
+    painter->setDrawRegion(
         VRect(int(surface.drawRegionPosX()), int(surface.drawRegionPosY()),
               int(surface.drawRegionWidth()), int(surface.drawRegionHeight())));
-    mRootLayer->render(&painter, {}, {}, mSurfaceCache);
-    painter.end();
+    mRootLayer->render(painter.get(), {}, {}, mSurfaceCache);
+    painter->end();
     return true;
 }
 
@@ -513,11 +516,11 @@ void renderer::CompLayer::render(VPainter *painter, const VRle &inheritMask,
     } else {
         if (complexContent()) {
             VSize    size = painter->clipBoundingRect().size();
-            VPainter srcPainter;
+            auto srcPainter = VPainter::create();
             VBitmap srcBitmap = cache.make_surface(size.width(), size.height());
-            srcPainter.begin(&srcBitmap);
-            renderHelper(&srcPainter, inheritMask, matteRle, cache);
-            srcPainter.end();
+            srcPainter->begin(&srcBitmap);
+            renderHelper(srcPainter.get(), inheritMask, matteRle, cache);
+            srcPainter->end();
             painter->drawBitmap(VPoint(), srcBitmap,
                                 uint8_t(combinedAlpha() * 255.0f));
             cache.release_surface(srcBitmap);
@@ -575,28 +578,28 @@ void renderer::CompLayer::renderMatteLayer(VPainter *painter, const VRle &mask,
     VSize size = painter->clipBoundingRect().size();
     // Decide if we can use fast matte.
     // 1. draw src layer to matte buffer
-    VPainter srcPainter;
+    auto srcPainter = VPainter::create();
     VBitmap  srcBitmap = cache.make_surface(size.width(), size.height());
-    srcPainter.begin(&srcBitmap);
-    src->render(&srcPainter, mask, matteRle, cache);
-    srcPainter.end();
+    srcPainter->begin(&srcBitmap);
+    src->render(srcPainter.get(), mask, matteRle, cache);
+    srcPainter->end();
 
     // 2. draw layer to layer buffer
-    VPainter layerPainter;
+    auto layerPainter = VPainter::create();
     VBitmap  layerBitmap = cache.make_surface(size.width(), size.height());
-    layerPainter.begin(&layerBitmap);
-    layer->render(&layerPainter, mask, matteRle, cache);
+    layerPainter->begin(&layerBitmap);
+    layer->render(layerPainter.get(), mask, matteRle, cache);
 
     // 2.1update composition mode
     switch (layer->matteType()) {
     case model::MatteType::Alpha:
     case model::MatteType::Luma: {
-        layerPainter.setBlendMode(BlendMode::DestIn);
+        layerPainter->setBlendMode(BlendMode::DestIn);
         break;
     }
     case model::MatteType::AlphaInv:
     case model::MatteType::LumaInv: {
-        layerPainter.setBlendMode(BlendMode::DestOut);
+        layerPainter->setBlendMode(BlendMode::DestOut);
         break;
     }
     default:
@@ -609,7 +612,7 @@ void renderer::CompLayer::renderMatteLayer(VPainter *painter, const VRle &mask,
         srcBitmap.updateLuma();
     }
 
-    auto clip = layerPainter.clipBoundingRect();
+    auto clip = layerPainter->clipBoundingRect();
 
     // if the layer has only one renderer then use it as the clip rect
     // when blending 2 buffer and copy back to final buffer to avoid
@@ -620,8 +623,8 @@ void renderer::CompLayer::renderMatteLayer(VPainter *painter, const VRle &mask,
     }
 
     // 2.3 draw src buffer as mask
-    layerPainter.drawBitmap(clip, srcBitmap, clip);
-    layerPainter.end();
+    layerPainter->drawBitmap(clip, srcBitmap, clip);
+    layerPainter->end();
     // 3. draw the result buffer into painter
     painter->drawBitmap(clip, layerBitmap, clip);
 
@@ -885,11 +888,11 @@ void renderer::ShapeLayer::render(VPainter *painter, const VRle &inheritMask,
     } else {
         //do offscreen rendering
         VSize    size = painter->clipBoundingRect().size();
-        VPainter srcPainter;
+        auto srcPainter = VPainter::create();
         VBitmap srcBitmap = cache.make_surface(size.width(), size.height());
-        srcPainter.begin(&srcBitmap);
-        Layer::render(&srcPainter, inheritMask, matteRle, cache);
-        srcPainter.end();
+        srcPainter->begin(&srcBitmap);
+        Layer::render(srcPainter.get(), inheritMask, matteRle, cache);
+        srcPainter->end();
         painter->drawBitmap(VPoint(), srcBitmap,
                             uint8_t(combinedAlpha() * 255.0f));
         cache.release_surface(srcBitmap);

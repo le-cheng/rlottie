@@ -196,6 +196,11 @@ public:
     const LOTLayerNode *renderTree() const;
     bool                render(const rlottie::Surface &surface);
     void                setValue(const std::string &keypath, LOTVariant &value);
+    
+    // 设置渲染后端
+    void setRenderBackend(RenderType type) { mRenderBackend = type; }
+    // 获取当前渲染后端
+    RenderType renderBackend() const { return mRenderBackend; }
 
 private:
     SurfaceCache                        mSurfaceCache;
@@ -208,6 +213,7 @@ private:
     int                                 mCurFrameNo;
     bool                                mKeepAspectRatio{true};
     bool                                mHasDynamicValue{false};
+    RenderType                          mRenderBackend{RenderType::CPU}; // 默认使用CPU渲染
 };
 
 class Layer {

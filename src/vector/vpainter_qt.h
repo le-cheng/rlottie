@@ -24,6 +24,7 @@
 #define VPAINTER_QT_H
 
 #include "vpainter.h"
+#include "vpath.h"
 
 // 检查是否启用了Qt渲染后端
 #ifdef LOTTIE_QT
@@ -47,6 +48,9 @@ class VPainterQt : public VPainter {
 public:
     VPainterQt() = default;
     explicit VPainterQt(VBitmap *buffer);
+    
+    RenderType renderType() const override { return RenderType::Qt; }
+    
     bool begin(VBitmap *buffer) override;
     void end() override;
     void setDrawRegion(const VRect &region) override;
@@ -59,6 +63,10 @@ public:
     void drawBitmap(const VRect &target, const VBitmap &bitmap, const VRect &source, uint8_t const_alpha = 255) override;
     void drawBitmap(const VPoint &point, const VBitmap &bitmap, uint8_t const_alpha = 255) override;
     void drawBitmap(const VRect &rect, const VBitmap &bitmap, uint8_t const_alpha = 255) override;
+
+    // 矢量绘制方法 - Qt的优势所在
+    void drawPath(const VPath &path, const VBrush &brush) override;
+    void drawPath(const VPath &path, const VBrush &brush, CapStyle cap, JoinStyle join, float width) override;
 
 private:
     QImage        *mQImage = nullptr;
@@ -75,6 +83,9 @@ private:
     QBrush brushToQBrush(const VBrush &brush);
     // 将BlendMode转换为QPainter::CompositionMode
     int blendModeToCompositionMode(BlendMode mode);
+
+    QPainterPath convertVPathToQPainterPath(const VPath &path);
+    void setupQPainter(const VBrush &brush);
 };
 
 V_END_NAMESPACE

@@ -39,12 +39,17 @@ enum class RenderType {
 };
 
 class VBitmap;
+class VPath;
+
 class VPainter {
 public:
     virtual ~VPainter() = default;
     
     // 创建特定类型的渲染器
     static std::unique_ptr<VPainter> create(RenderType type = RenderType::CPU);
+    
+    // 获取渲染器类型
+    virtual RenderType renderType() const = 0;
     
     // 抽象接口
     virtual bool  begin(VBitmap *buffer) = 0;
@@ -60,6 +65,10 @@ public:
     virtual void  drawBitmap(const VRect &target, const VBitmap &bitmap, const VRect &source, uint8_t const_alpha = 255) = 0;
     virtual void  drawBitmap(const VPoint &point, const VBitmap &bitmap, uint8_t const_alpha = 255) = 0;
     virtual void  drawBitmap(const VRect &rect, const VBitmap &bitmap, uint8_t const_alpha = 255) = 0;
+
+    // 添加直接绘制VPath的方法，用于矢量渲染后端
+    virtual void  drawPath(const VPath &path, const VBrush &brush) = 0;
+    virtual void  drawPath(const VPath &path, const VBrush &brush, CapStyle cap, JoinStyle join, float width) = 0;
 };
 
 // 默认CPU渲染器实现
@@ -67,6 +76,9 @@ class VPainterCPU : public VPainter {
 public:
     VPainterCPU() = default;
     explicit VPainterCPU(VBitmap *buffer);
+    
+    RenderType renderType() const override { return RenderType::CPU; }
+    
     bool  begin(VBitmap *buffer) override;
     void  end() override;
     void  setDrawRegion(const VRect &region) override;
@@ -80,6 +92,10 @@ public:
     void  drawBitmap(const VRect &target, const VBitmap &bitmap, const VRect &source, uint8_t const_alpha = 255) override;
     void  drawBitmap(const VPoint &point, const VBitmap &bitmap, uint8_t const_alpha = 255) override;
     void  drawBitmap(const VRect &rect, const VBitmap &bitmap, uint8_t const_alpha = 255) override;
+
+    // 添加直接绘制VPath的方法，用于矢量渲染后端
+    void  drawPath(const VPath &path, const VBrush &brush) override;
+    void  drawPath(const VPath &path, const VBrush &brush, CapStyle cap, JoinStyle join, float width) override;
 private:
     void drawBitmapUntransform(const VRect &target, const VBitmap &bitmap,
                                const VRect &source, uint8_t const_alpha);

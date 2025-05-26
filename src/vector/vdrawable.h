@@ -29,6 +29,8 @@
 #include "vrle.h"
 #include "vraster.h"
 
+class VPainter;
+
 class VDrawable {
 public:
     enum class DirtyState : unsigned char {
@@ -59,6 +61,12 @@ public:
     void preprocess(const VRect &clip);
     void applyDashOp();
     VRle rle();
+    
+    // 添加直接绘制VPath的方法，用于矢量渲染器
+    void drawPath(VPainter *painter);
+    const VPath& path() const { return mPath; }
+    const VBrush& brush() const { return mBrush; }
+    
     void setName(const char *name)
     {
         mName = name;
@@ -79,6 +87,7 @@ public:
 
 public:
     VPath                    mPath;
+    VPath                    mOriginalPath; // 保留原始路径，用于矢量渲染
     VBrush                   mBrush;
     VRasterizer              mRasterizer;
     StrokeInfo              *mStrokeInfo{nullptr};

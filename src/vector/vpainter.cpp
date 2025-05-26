@@ -32,6 +32,8 @@
 
 // 再包含其他头文件
 #include "vpainter.h"
+#include "vpath.h"
+#include "vraster.h"
 #include <algorithm>
 #include <memory>
 
@@ -46,8 +48,11 @@ namespace std {
 #endif
 
 // 引入Qt渲染器头文件，处理条件编译
-#if defined(LOTTIE_QT)
-#include "vpainter_qt.h"
+#if defined(LOTTIE_QT) || defined(__has_include)
+#  if defined(LOTTIE_QT) || __has_include("vpainter_qt.h")
+#    include "vpainter_qt.h"
+#    define HAS_QT_PAINTER 1
+#  endif
 #endif
 
 V_BEGIN_NAMESPACE
@@ -58,9 +63,12 @@ std::unique_ptr<VPainter> VPainter::create(RenderType type)
     switch (type) {
     case RenderType::CPU:
         return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));
-#if defined(LOTTIE_QT)
     case RenderType::Qt:
+#ifdef HAS_QT_PAINTER
         return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterQt()));
+#else
+        // 如果没有Qt支持，回退到CPU渲染
+        return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));
 #endif
     default:
         // 默认返回CPU渲染器
@@ -211,6 +219,39 @@ void VPainterCPU::drawBitmap(const VRect &rect, const VBitmap &bitmap,
 
     drawBitmap(rect, bitmap, bitmap.rect(),
                const_alpha);
+}
+
+// VPainterCPU的drawPath实现 - 转换为RLE后绘制
+void VPainterCPU::drawPath(const VPath &path, const VBrush &brush)
+{
+    if (path.empty()) return;
+    
+    // 设置画刷
+    setBrush(brush);
+    
+    // 创建光栅化器并转换VPath为VRle
+    VRasterizer rasterizer;
+    rasterizer.rasterize(path, FillRule::Winding, clipBoundingRect());
+    VRle rle = rasterizer.rle();
+    
+    // 绘制RLE
+    drawRle(VPoint(), rle);
+}
+
+void VPainterCPU::drawPath(const VPath &path, const VBrush &brush, CapStyle cap, JoinStyle join, float width)
+{
+    if (path.empty()) return;
+    
+    // 设置画刷
+    setBrush(brush);
+    
+    // 创建光栅化器并转换VPath为VRle(描边)
+    VRasterizer rasterizer;
+    rasterizer.rasterize(path, cap, join, width, 1.0f, clipBoundingRect());
+    VRle rle = rasterizer.rle();
+    
+    // 绘制RLE
+    drawRle(VPoint(), rle);
 }
 
 V_END_NAMESPACE

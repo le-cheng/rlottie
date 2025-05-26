@@ -39,6 +39,7 @@
 // 在包含其他头文件前先包含Qt头文件
 #include "vpainter_qt.h"
 #include "vdrawhelper.h"
+#include "vpath.h"
 
 V_BEGIN_NAMESPACE
 
@@ -63,7 +64,11 @@ bool VPainterQt::begin(VBitmap *buffer)
     
     // 开始Qt绘制
     mQPainter = new QPainter();
-    mQPainter->begin(mQImage);
+    bool success = mQPainter->begin(mQImage);
+    if (!success) {
+        return false;
+    }
+    
     mQPainter->setRenderHint(QPainter::Antialiasing, true);
     mQPainter->setRenderHint(QPainter::SmoothPixmapTransform, true);
     
@@ -133,19 +138,9 @@ void VPainterQt::drawRle(const VPoint &pos, const VRle &rle)
 
 void VPainterQt::drawRle(const VRle &rle, const VRle &clip)
 {
-    if (rle.empty() || clip.empty()) return;
-
-    // 创建rle路径
-    QPainterPath rlePath = rleToPath(rle);
-    
-    // 创建clip路径
-    QPainterPath clipPath = rleToPath(clip);
-    
-    // 应用裁剪
-    rlePath = rlePath.intersected(clipPath);
-    
-    // 绘制
-    mQPainter->fillPath(rlePath, *mQBrush);
+    // TODO: 实现更复杂的RLE裁剪绘制
+    // 暂时简化处理，直接绘制rle
+    drawRle(VPoint(), rle);
 }
 
 VRect VPainterQt::clipBoundingRect() const
@@ -306,6 +301,142 @@ int VPainterQt::blendModeToCompositionMode(BlendMode mode)
         return QPainter::CompositionMode_DestinationOut;
     default:
         return QPainter::CompositionMode_SourceOver;
+    }
+}
+
+// 实现真正的矢量绘制 - Qt的优势
+void VPainterQt::drawPath(const VPath &path, const VBrush &brush)
+{
+    if (!mQPainter || path.empty()) return;
+
+    QPainterPath qPath = convertVPathToQPainterPath(path);
+    if (qPath.isEmpty()) return;
+    
+    setupQPainter(brush);
+
+    // 填充绘制
+    mQPainter->fillPath(qPath, mQPainter->brush());
+}
+
+void VPainterQt::drawPath(const VPath &path, const VBrush &brush, CapStyle cap, JoinStyle join, float width)
+{
+    if (!mQPainter || path.empty()) return;
+
+    QPainterPath qPath = convertVPathToQPainterPath(path);
+    
+    // 设置描边参数
+    QPen pen;
+    pen.setColor(QColor(255, 255, 255)); // 默认白色，会被brush覆盖
+    pen.setWidthF(width);
+    
+    // 转换线帽样式
+    switch (cap) {
+        case CapStyle::Round:
+            pen.setCapStyle(Qt::RoundCap);
+            break;
+        case CapStyle::Square:
+            pen.setCapStyle(Qt::SquareCap);
+            break;
+        default:
+            pen.setCapStyle(Qt::FlatCap);
+            break;
+    }
+    
+    // 转换连接样式
+    switch (join) {
+        case JoinStyle::Round:
+            pen.setJoinStyle(Qt::RoundJoin);
+            break;
+        case JoinStyle::Bevel:
+            pen.setJoinStyle(Qt::BevelJoin);
+            break;
+        default:
+            pen.setJoinStyle(Qt::MiterJoin);
+            break;
+    }
+    
+    // 设置画刷颜色到画笔
+    if (brush.type() == VBrush::Type::Solid) {
+        VColor color = brush.mColor;
+        pen.setColor(QColor(color.r, color.g, color.b, color.a));
+    }
+    
+    mQPainter->setPen(pen);
+    mQPainter->drawPath(qPath);
+}
+
+QPainterPath VPainterQt::convertVPathToQPainterPath(const VPath &path)
+{
+    QPainterPath qPath;
+    
+    if (path.empty()) return qPath;
+    
+    const auto &elements = path.elements();
+    const auto &points = path.points();
+    
+    if (elements.empty() || points.empty()) return qPath;
+    
+    size_t pointIndex = 0;
+    for (VPath::Element element : elements) {
+        switch (element) {
+            case VPath::Element::MoveTo:
+                if (pointIndex < points.size()) {
+                    qPath.moveTo(points[pointIndex].x(), points[pointIndex].y());
+                    pointIndex++;
+                }
+                break;
+                
+            case VPath::Element::LineTo:
+                if (pointIndex < points.size()) {
+                    qPath.lineTo(points[pointIndex].x(), points[pointIndex].y());
+                    pointIndex++;
+                }
+                break;
+                
+            case VPath::Element::CubicTo:
+                if (pointIndex + 2 < points.size()) {
+                    qPath.cubicTo(
+                        points[pointIndex].x(), points[pointIndex].y(),
+                        points[pointIndex + 1].x(), points[pointIndex + 1].y(),
+                        points[pointIndex + 2].x(), points[pointIndex + 2].y()
+                    );
+                    pointIndex += 3;
+                }
+                break;
+                
+            case VPath::Element::Close:
+                qPath.closeSubpath();
+                break;
+        }
+    }
+    
+    return qPath;
+}
+
+void VPainterQt::setupQPainter(const VBrush &brush)
+{
+    if (!mQPainter) return;
+    
+    switch (brush.type()) {
+        case VBrush::Type::Solid: {
+            VColor color = brush.mColor;
+            QColor qColor(color.r, color.g, color.b, color.a);
+            mQPainter->setBrush(QBrush(qColor));
+            break;
+        }
+        case VBrush::Type::LinearGradient: {
+            // TODO: 实现线性渐变
+            mQPainter->setBrush(QBrush(Qt::red));
+            break;
+        }
+        case VBrush::Type::RadialGradient: {
+            // TODO: 实现径向渐变
+            mQPainter->setBrush(QBrush(Qt::blue));
+            break;
+        }
+        default:
+            mQPainter->setBrush(QBrush(Qt::NoBrush));
+            break;
     }
 }
 

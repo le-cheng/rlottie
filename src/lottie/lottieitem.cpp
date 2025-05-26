@@ -21,6 +21,7 @@
  */
 
 #include "lottieitem.h"
+#include "vpainter.h"
 #include <algorithm>
 #include <cmath>
 #include <iterator>
@@ -247,26 +248,56 @@ void renderer::Layer::render(VPainter *painter, const VRle &inheritMask,
 
     for (auto &i : renderlist) {
         painter->setBrush(i->mBrush);
-        VRle rle = i->rle();
-        if (matteRle.empty()) {
-            if (mask.empty()) {
-                // no mask no matte
-                painter->drawRle(VPoint(), rle);
+        
+        // 检查是否为Qt渲染器
+        if (painter->renderType() == RenderType::Qt) {
+            // Qt渲染器：优先使用矢量路径绘制
+            if (mask.empty() && matteRle.empty()) {
+                // 无遮罩无matte，直接绘制VPath
+                i->drawPath(painter);
             } else {
-                // only mask
-                painter->drawRle(rle, mask);
+                // 有遮罩或matte，回退到RLE方式但记录原因
+                VRle rle = i->rle();
+                if (matteRle.empty()) {
+                    if (mask.empty()) {
+                        painter->drawRle(VPoint(), rle);
+                    } else {
+                        painter->drawRle(rle, mask);
+                    }
+                } else {
+                    if (!mask.empty()) rle = rle & mask;
+                    if (rle.empty()) continue;
+                    if (matteType() == model::MatteType::AlphaInv) {
+                        rle = rle - matteRle;
+                        painter->drawRle(VPoint(), rle);
+                    } else {
+                        painter->drawRle(rle, matteRle);
+                    }
+                }
             }
-
         } else {
-            if (!mask.empty()) rle = rle & mask;
+            // CPU渲染器：使用传统的RLE绘制方式
+            VRle rle = i->rle();
+            if (matteRle.empty()) {
+                if (mask.empty()) {
+                    // no mask no matte
+                    painter->drawRle(VPoint(), rle);
+                } else {
+                    // only mask
+                    painter->drawRle(rle, mask);
+                }
 
-            if (rle.empty()) continue;
-            if (matteType() == model::MatteType::AlphaInv) {
-                rle = rle - matteRle;
-                painter->drawRle(VPoint(), rle);
             } else {
-                // render with matteRle as clip.
-                painter->drawRle(rle, matteRle);
+                if (!mask.empty()) rle = rle & mask;
+
+                if (rle.empty()) continue;
+                if (matteType() == model::MatteType::AlphaInv) {
+                    rle = rle - matteRle;
+                    painter->drawRle(VPoint(), rle);
+                } else {
+                    // render with matteRle as clip.
+                    painter->drawRle(rle, matteRle);
+                }
             }
         }
     }

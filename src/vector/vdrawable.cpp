@@ -23,6 +23,7 @@
 #include "vdrawable.h"
 #include "vdasher.h"
 #include "vraster.h"
+#include "vpainter.h"
 
 VDrawable::VDrawable(VDrawable::Type type)
 {
@@ -64,6 +65,9 @@ void VDrawable::applyDashOp()
 void VDrawable::preprocess(const VRect &clip)
 {
     if (mFlag & (DirtyState::Path)) {
+        // 保存原始路径副本，用于矢量渲染
+        mOriginalPath = mPath;
+        
         if (mType == Type::Fill) {
             mRasterizer.rasterize(std::move(mPath), mFillRule, clip);
         } else {
@@ -79,6 +83,33 @@ void VDrawable::preprocess(const VRect &clip)
 VRle VDrawable::rle()
 {
     return mRasterizer.rle();
+}
+
+// 添加直接绘制VPath的方法，用于矢量渲染器
+void VDrawable::drawPath(VPainter *painter)
+{
+    // 使用原始路径进行矢量渲染
+    VPath pathToUse = mOriginalPath.empty() ? mPath : mOriginalPath;
+    
+    if (pathToUse.empty()) return;
+    
+    // 应用虚线操作（如果需要）
+    VPath finalPath = pathToUse;
+    if (mStrokeInfo && (mType == Type::StrokeWithDash)) {
+        auto obj = static_cast<StrokeWithDashInfo *>(mStrokeInfo);
+        if (!obj->mDash.empty()) {
+            VDasher dasher(obj->mDash.data(), obj->mDash.size());
+            finalPath = dasher.dashed(pathToUse);
+        }
+    }
+    
+    // 根据类型绘制
+    if (mType == Type::Fill) {
+        painter->drawPath(finalPath, mBrush);
+    } else {
+        // 描边绘制
+        painter->drawPath(finalPath, mBrush, mStrokeInfo->cap, mStrokeInfo->join, mStrokeInfo->width);
+    }
 }
 
 void VDrawable::setStrokeInfo(CapStyle cap, JoinStyle join, float miterLimit,

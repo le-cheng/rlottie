@@ -52,9 +52,12 @@ namespace rlottie {
  *  @brief 定义可用的渲染后端类型
  */
 enum class RenderBackend {
-    CPU,    /*!< 默认的CPU软件渲染 */
-    Qt,     /*!< 使用Qt的QPainter渲染 */
-    Custom  /*!< 自定义渲染后端 */
+    CPU,        /*!< 默认的CPU软件渲染 */
+    Qt,         /*!< 使用Qt的QPainter渲染 */
+    VGLite,     /*!< 使用VGLite 2D GPU渲染 */
+    OpenGL,     /*!< 使用OpenGL渲染 */
+    Vulkan,     /*!< 使用Vulkan渲染 */
+    Custom      /*!< 自定义渲染后端 */
 };
 
 /**

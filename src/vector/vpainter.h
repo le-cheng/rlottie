@@ -33,9 +33,12 @@ V_BEGIN_NAMESPACE
 
 // 渲染后端类型(与rlottie::RenderBackend保持一致)
 enum class RenderType {
-    CPU,    // 默认CPU软件渲染
-    Qt,     // Qt渲染
-    Custom  // 自定义渲染
+    CPU,        // 默认CPU软件渲染
+    Qt,         // Qt渲染
+    VGLite,     // VGLite 2D GPU渲染
+    OpenGL,     // OpenGL渲染
+    Vulkan,     // Vulkan渲染
+    Custom      // 自定义渲染
 };
 
 class VBitmap;

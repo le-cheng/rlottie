@@ -36,6 +36,7 @@
 #include "vraster.h"
 #include <algorithm>
 #include <memory>
+#include "vdebug.h"
 
 // 如果C++14的std::make_unique不可用，提供自己的实现
 #if __cplusplus < 201402L
@@ -55,6 +56,13 @@ namespace std {
 #  endif
 #endif
 
+#if defined(LOTTIE_VGLITE) || defined(__has_include)
+#  if defined(LOTTIE_VGLITE) || __has_include("vpainter_vglite.h")
+#    include "vpainter_vglite.h"
+#    define HAS_VGLITE_PAINTER 1
+#  endif
+#endif
+
 V_BEGIN_NAMESPACE
 
 // 创建特定类型的渲染器实例
@@ -67,9 +75,20 @@ std::unique_ptr<VPainter> VPainter::create(RenderType type)
 #ifdef HAS_QT_PAINTER
         return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterQt()));
 #else
-        // 如果没有Qt支持，回退到CPU渲染
+        vDebug << "Qt渲染器未编译，回退到CPU渲染";
         return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));
 #endif
+    case RenderType::VGLite:
+        // VGLite渲染器开发中，暂时回退到CPU渲染
+        vDebug << "VGLite渲染器开发中，回退到CPU渲染";
+        return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));
+    case RenderType::OpenGL:
+        vDebug << "OpenGL渲染器待实现，回退到CPU渲染";
+        return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));
+    case RenderType::Vulkan:
+        vDebug << "Vulkan渲染器待实现，回退到CPU渲染";
+        return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));
+    case RenderType::Custom:
     default:
         // 默认返回CPU渲染器
         return std::unique_ptr<VPainter>(static_cast<VPainter*>(new VPainterCPU()));

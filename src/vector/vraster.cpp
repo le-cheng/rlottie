@@ -266,49 +266,18 @@ static void bboxCb(int x, int y, int w, int h, void *user)
     rle->setBoundingRect({x, y, w, h});
 }
 
+// 单线程版本：简化的共享RLE类
 class SharedRle {
 public:
     SharedRle() = default;
     VRle &unsafe() { return _rle; }
-    void  notify()
-    {
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            _ready = true;
-        }
-        _cv.notify_one();
-    }
-    void wait()
-    {
-        if (!_pending) return;
-
-        {
-            std::unique_lock<std::mutex> lock(_mutex);
-            while (!_ready) _cv.wait(lock);
-        }
-
-        _pending = false;
-    }
-
-    VRle &get()
-    {
-        wait();
-        return _rle;
-    }
-
-    void reset()
-    {
-        wait();
-        _ready = false;
-        _pending = true;
-    }
+    void  notify() { /* 单线程版本不需要通知 */ }
+    void  wait() { /* 单线程版本不需要等待 */ }
+    VRle &get() { return _rle; }
+    void  reset() { /* 单线程版本直接访问，不需要同步 */ }
 
 private:
-    VRle                    _rle;
-    std::mutex              _mutex;
-    std::condition_variable _cv;
-    bool                    _ready{true};
-    bool                    _pending{false};
+    VRle _rle;
 };
 
 struct VRleTask {
@@ -415,105 +384,7 @@ struct VRleTask {
 
 using VTask = std::shared_ptr<VRleTask>;
 
-#ifdef LOTTIE_THREAD_SUPPORT
-
-#include <thread>
-#include "vtaskqueue.h"
-
-#ifdef __linux__
-#include <pthread.h>
-#include <sstream>
-#endif
-
-class RleTaskScheduler {
-    const unsigned                _count{std::thread::hardware_concurrency()};
-    std::vector<std::thread>      _threads;
-    std::vector<TaskQueue<VTask>> _q{_count};
-    std::atomic<unsigned>         _index{0};
-
-    void run(unsigned i)
-    {
-        /*
-         * initalize  per thread objects.
-         */
-        FTOutline     outlineRef;
-        SW_FT_Stroker stroker;
-        SW_FT_Stroker_New(&stroker);
-
-        // Create Thread Name for Debugging (Linux)
-#ifdef __linux__
-        std::ostringstream nameStream;
-        nameStream << "lottie-tsk-" << i;
-        pthread_setname_np(pthread_self(), nameStream.str().c_str());
-#endif
-
-        // Task Loop
-        VTask task;
-        while (true) {
-            bool success = false;
-
-            for (unsigned n = 0; n != _count * 2; ++n) {
-                if (_q[(i + n) % _count].try_pop(task)) {
-                    success = true;
-                    break;
-                }
-            }
-
-            if (!success && !_q[i].pop(task)) break;
-
-            (*task)(outlineRef, stroker);
-        }
-
-        // cleanup
-        SW_FT_Stroker_Done(stroker);
-    }
-
-    RleTaskScheduler()
-    {
-        for (unsigned n = 0; n != _count; ++n) {
-            _threads.emplace_back([&, n] { run(n); });
-        }
-
-        IsRunning = true;
-    }
-
-public:
-    static bool IsRunning;
-
-    static RleTaskScheduler &instance()
-    {
-        static RleTaskScheduler singleton;
-        return singleton;
-    }
-
-    ~RleTaskScheduler() { stop(); }
-
-    void stop()
-    {
-        if (IsRunning) {
-            IsRunning = false;
-
-            for (auto &e : _q) e.done();
-            for (auto &e : _threads) e.join();
-        }
-    }
-
-    void process(VTask task)
-    {
-        auto i = _index++;
-
-        for (unsigned n = 0; n != _count; ++n) {
-            if (_q[(i + n) % _count].try_push(std::move(task))) return;
-        }
-
-        if (_count > 0) {
-            _q[i % _count].push(std::move(task));
-        }
-    }
-};
-
-#else
-
+// 单线程版本：简化的光栅化任务调度器
 class RleTaskScheduler {
 public:
     FTOutline     outlineRef{};
@@ -536,7 +407,6 @@ public:
 
     void process(VTask task) { (*task)(outlineRef, stroker); }
 };
-#endif
 
 bool RleTaskScheduler::IsRunning{false};
 
@@ -589,9 +459,7 @@ void VRasterizer::rasterize(VPath path, CapStyle cap, JoinStyle join,
 
 void lottieShutdownRasterTaskScheduler()
 {
-    if (RleTaskScheduler::IsRunning) {
-        RleTaskScheduler::instance().stop();
-    }
+    // 单线程版本：不需要关闭操作
 }
 
 V_END_NAMESPACE

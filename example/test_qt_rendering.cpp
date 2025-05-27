@@ -4,6 +4,10 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include "vbitmap.h"
+#include "vpainter_qt.h"
+#include "vdebug.h"
+using namespace rlottie;
 
 bool saveBMP(std::vector<uint32_t>& buffer, size_t width, size_t height,
              const std::string& filename)
@@ -32,6 +36,107 @@ bool saveBMP(std::vector<uint32_t>& buffer, size_t width, size_t height,
     out.close();
     return true;
 }
+
+int test_qt_buffer_clear() {
+    std::cout << "\n测试Qt渲染器内存清理..." << std::endl;
+    // 创建一个200x200的位图缓冲区
+    int width = 200;
+    int height = 200;
+    size_t stride = width * 4; // ARGB32格式
+    
+    std::vector<uint32_t> buffer(width * height);
+    
+    // 初始化为脏数据 (随机非零值)
+    for (size_t i = 0; i < buffer.size(); ++i) {
+        buffer[i] = 0xFFFF0000 + (i % 256); // 红色背景 + 变化的alpha
+    }
+    
+    std::cout << "初始脏数据检查:" << std::endl;
+    std::cout << "  前10个像素: ";
+    for (int i = 0; i < 10; ++i) {
+        std::cout << std::hex << buffer[i] << " ";
+    }
+    std::cout << std::dec << std::endl;
+    
+    // 创建VBitmap
+    VBitmap bitmap(reinterpret_cast<uint8_t*>(buffer.data()), 
+                   width, height, stride, VBitmap::Format::ARGB32_Premultiplied);
+    bitmap.updateLuma();
+    
+    #ifdef LOTTIE_QT
+    {
+        VPainterQt painter;
+        bool success = painter.begin(&bitmap);
+        
+        if (success) {
+            std::cout << "Qt渲染器初始化成功" << std::endl;
+            
+            // 检查清理后的内存
+            std::cout << "清理后前10个像素: ";
+            for (int i = 0; i < 10; ++i) {
+                std::cout << std::hex << buffer[i] << " ";
+            }
+            std::cout << std::dec << std::endl;
+            
+            // 测试区域清理
+            VRect region(50, 50, 100, 100);
+            
+            // 重新添加脏数据
+            for (int y = region.top(); y < region.bottom(); ++y) {
+                for (int x = region.left(); x < region.right(); ++x) {
+                    if (y < height && x < width) {
+                        buffer[y * width + x] = 0xFF00FF00; // 绿色
+                    }
+                }
+            }
+            
+            std::cout << "添加脏数据后，区域内像素 [60,60]: " 
+                      << std::hex << buffer[60 * width + 60] << std::dec << std::endl;
+            
+            // 清理指定区域
+            painter.clearBuffer(region);
+            
+            std::cout << "区域清理后，像素 [60,60]: " 
+                      << std::hex << buffer[60 * width + 60] << std::dec << std::endl;
+            
+            painter.end();
+            std::cout << "Qt渲染器清理完成" << std::endl;
+        } else {
+            std::cout << "Qt渲染器初始化失败" << std::endl;
+        }
+    }
+    #endif
+
+    if (saveBMP(buffer, width, height, "buffer_clear_test.bmp")) {
+        std::cout << "✅ 结果已保存到 buffer_clear_test.bmp" << std::endl;
+    } else {
+        std::cout << "❌ 保存失败" << std::endl;
+        return 1;
+    }
+  
+    std::cout << "\n内存清理测试完成!" << std::endl;
+    return 0;
+} 
+
+int test_log()
+{
+    std::cout << "测试日志功能..." << std::endl;
+    
+    // 初始化日志系统
+    initialize(GuaranteedLogger{}, "/home/lecheng/workspace/e_lottie/rlottie/build/", "rlottie", 1);
+    
+    // 设置日志级别
+    set_log_level(LogLevel::INFO);
+    
+    // 测试不同级别的日志
+    vDebug << "这是调试信息";
+    vWarning << "这是警告信息";  
+    vCritical << "这是严重错误信息";
+    
+    std::cout << "日志测试完成，检查 /home/lecheng/workspace/e_lottie/rlottie/out/ 目录" << std::endl;
+    
+    return 0;
+} 
 
 int main() {
     std::cout << "=== Qt渲染器测试开始 ===" << std::endl;
@@ -117,6 +222,8 @@ int main() {
     std::cout << "✅ 跳过不必要的RLE转换" << std::endl;
     std::cout << "✅ 支持moveTo、lineTo、cubicTo等矢量命令" << std::endl;
     std::cout << "✅ 避免了光栅化过程，提高性能" << std::endl;
+
+    test_qt_buffer_clear();
 
     return 0;
 }

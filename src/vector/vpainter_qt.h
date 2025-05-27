@@ -68,6 +68,10 @@ public:
     void drawPath(const VPath &path, const VBrush &brush) override;
     void drawPath(const VPath &path, const VBrush &brush, CapStyle cap, JoinStyle join, float width) override;
 
+    // 清理buffer内存
+    void clearBuffer();
+    void clearBuffer(const VRect &region);
+
 private:
     QImage        *mQImage = nullptr;
     QPainter      *mQPainter = nullptr;

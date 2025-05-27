@@ -29,7 +29,6 @@ set_target_properties(rlottie PROPERTIES
 add_library(rlottie::rlottie ALIAS rlottie)
 
 option(LOTTIE_MODULE "Enable LOTTIE MODULE SUPPORT" ON)
-option(LOTTIE_THREAD "Enable LOTTIE THREAD SUPPORT" OFF)
 option(LOTTIE_CACHE "Enable LOTTIE CACHE SUPPORT" ON)
 option(LOTTIE_TEST "Build LOTTIE AUTOTESTS" OFF)
 option(LOTTIE_CCACHE "Enable LOTTIE ccache SUPPORT" OFF)
@@ -83,15 +82,6 @@ if (WIN32 AND NOT BUILD_SHARED_LIBS)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 endif()
-
-#declare dependancy
-set( CMAKE_THREAD_PREFER_PTHREAD TRUE )
-find_package( Threads )
-
-target_link_libraries(rlottie
-                    PUBLIC
-                        "${CMAKE_THREAD_LIBS_INIT}"
-                     )
 
 if (NOT APPLE AND NOT WIN32)
     target_link_libraries(rlottie

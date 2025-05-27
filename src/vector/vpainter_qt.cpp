@@ -53,6 +53,9 @@ bool VPainterQt::begin(VBitmap *buffer)
     mBuffer.prepare(buffer);
     mSpanData.init(&mBuffer);
     
+    // 清理内存中的脏区域
+    clearBuffer();
+    
     // 创建QImage与buffer共享内存
     mQImage = new QImage(
         reinterpret_cast<uchar*>(buffer->data()),
@@ -61,21 +64,21 @@ bool VPainterQt::begin(VBitmap *buffer)
         buffer->stride(),
         QImage::Format_ARGB32_Premultiplied
     );
-    
+
     // 开始Qt绘制
     mQPainter = new QPainter();
     bool success = mQPainter->begin(mQImage);
     if (!success) {
         return false;
     }
-    
+
     mQPainter->setRenderHint(QPainter::Antialiasing, true);
     mQPainter->setRenderHint(QPainter::SmoothPixmapTransform, true);
-    
+
     mDrawRect = new QRect();
     mQBrush = new QBrush();
     mQPen = new QPen();
-    
+
     return true;
 }
 
@@ -86,25 +89,65 @@ void VPainterQt::end()
         delete mQPainter;
         mQPainter = nullptr;
     }
-    
+
     if (mQImage) {
         delete mQImage;
         mQImage = nullptr;
     }
-    
+
     if (mDrawRect) {
         delete mDrawRect;
         mDrawRect = nullptr;
     }
-    
+
     if (mQBrush) {
         delete mQBrush;
         mQBrush = nullptr;
     }
-    
+
     if (mQPen) {
         delete mQPen;
         mQPen = nullptr;
+    }
+}
+
+void VPainterQt::clearBuffer()
+{
+    if (mQPainter) {
+        QPainter::CompositionMode oldMode = mQPainter->compositionMode();
+        mQPainter->setCompositionMode(QPainter::CompositionMode_Clear);
+        mQPainter->fillRect(QRect(0, 0, mBuffer.width(), mBuffer.height()), 
+                           QColor(0, 0, 0, 0));
+        mQPainter->setCompositionMode(oldMode);
+    } else {
+        mBuffer.clear();
+    }
+}
+
+void VPainterQt::clearBuffer(const VRect &region)
+{
+    // 只清理指定区域
+    if (region.empty()) return;
+    
+    // 方法1: 使用Qt填充透明色
+    if (mQPainter && mQImage) {
+        QPainter::CompositionMode oldMode = mQPainter->compositionMode();
+        mQPainter->setCompositionMode(QPainter::CompositionMode_Clear);
+        mQPainter->fillRect(QRect(region.left(), region.top(), region.width(), region.height()), 
+                           QColor(0, 0, 0, 0));
+        mQPainter->setCompositionMode(oldMode);
+    } else {
+        // 方法2: 直接操作内存 - 当QPainter还未初始化时
+        for (int y = region.top(); y < region.bottom(); ++y) {
+            if (y >= 0 && y < static_cast<int>(mBuffer.height())) {
+                uint32_t *line = reinterpret_cast<uint32_t*>(mBuffer.scanLine(y));
+                int startX = std::max(0, region.left());
+                int endX = std::min(static_cast<int>(mBuffer.width()), region.right());
+                if (startX < endX) {
+                    memset(line + startX, 0, (endX - startX) * sizeof(uint32_t));
+                }
+            }
+        }
     }
 }
 
@@ -160,9 +203,9 @@ void VPainterQt::drawBitmap(const VPoint &point, const VBitmap &bitmap, const VR
         bitmap.stride(),
         QImage::Format_ARGB32_Premultiplied
     );
-    
+
     QRect sourceRect(source.left(), source.top(), source.width(), source.height());
-    
+
     mQPainter->setOpacity(const_alpha / 255.0);
     mQPainter->drawImage(QPoint(point.x(), point.y()), img, sourceRect);
     mQPainter->setOpacity(1.0);
@@ -171,7 +214,7 @@ void VPainterQt::drawBitmap(const VPoint &point, const VBitmap &bitmap, const VR
 void VPainterQt::drawBitmap(const VRect &target, const VBitmap &bitmap, const VRect &source, uint8_t const_alpha)
 {
     if (!bitmap.valid()) return;
-    
+
     QImage img(
         reinterpret_cast<uchar*>(bitmap.data()),
         bitmap.width(),
@@ -179,10 +222,10 @@ void VPainterQt::drawBitmap(const VRect &target, const VBitmap &bitmap, const VR
         bitmap.stride(),
         QImage::Format_ARGB32_Premultiplied
     );
-    
+
     QRect sourceRect(source.left(), source.top(), source.width(), source.height());
     QRect targetRect(target.left(), target.top(), target.width(), target.height());
-    
+
     mQPainter->setOpacity(const_alpha / 255.0);
     mQPainter->drawImage(targetRect, img, sourceRect);
     mQPainter->setOpacity(1.0);
@@ -191,7 +234,7 @@ void VPainterQt::drawBitmap(const VRect &target, const VBitmap &bitmap, const VR
 void VPainterQt::drawBitmap(const VPoint &point, const VBitmap &bitmap, uint8_t const_alpha)
 {
     if (!bitmap.valid()) return;
-    
+
     drawBitmap(VRect(point.x(), point.y(), bitmap.width(), bitmap.height()),
                bitmap, bitmap.rect(), const_alpha);
 }
@@ -199,7 +242,7 @@ void VPainterQt::drawBitmap(const VPoint &point, const VBitmap &bitmap, uint8_t 
 void VPainterQt::drawBitmap(const VRect &rect, const VBitmap &bitmap, uint8_t const_alpha)
 {
     if (!bitmap.valid()) return;
-    
+
     drawBitmap(rect, bitmap, bitmap.rect(), const_alpha);
 }
 
@@ -215,7 +258,7 @@ static void processSpans(size_t count, const VRle::Span *spans, void *userData) 
         const VRle::Span &span = spans[i];
         int x = span.x + ctx->pos.x();
         int y = span.y + ctx->pos.y();
-        
+
         // 添加到路径
         ctx->path->addRect(x, y, span.len, 1);
     }
@@ -224,15 +267,15 @@ static void processSpans(size_t count, const VRle::Span *spans, void *userData) 
 QPainterPath VPainterQt::rleToPath(const VRle &rle, const VPoint &pos)
 {
     QPainterPath path;
-    
+
     PathDataContext ctx;
     ctx.path = &path;
     ctx.pos = pos;
-    
+
     // 使用临时的VRect调用intersect处理所有spans
     VRect rect = rle.boundingRect(); // 使用RLE自己的边界矩形
     rle.intersect(rect, processSpans, &ctx);
-    
+
     return path;
 }
 
@@ -247,32 +290,32 @@ QBrush VPainterQt::brushToQBrush(const VBrush &brush)
         // 这里只是基本实现，实际项目中可能需要更复杂的渐变处理
         const VGradient* gradient = brush.mGradient;
         QLinearGradient qGradient;
-        
+
         // 设置渐变颜色
         for (const auto &stop : gradient->mStops) {
             VColor color = stop.second;
             qGradient.setColorAt(stop.first, QColor(color.r, color.g, color.b, color.a));
         }
-        
+
         return QBrush(qGradient);
     }
     case VBrush::Type::RadialGradient: {
         // 类似于线性渐变的实现
         const VGradient* gradient = brush.mGradient;
         QRadialGradient qGradient;
-        
+
         for (const auto &stop : gradient->mStops) {
             VColor color = stop.second;
             qGradient.setColorAt(stop.first, QColor(color.r, color.g, color.b, color.a));
         }
-        
+
         return QBrush(qGradient);
     }
     case VBrush::Type::Texture: {
         // 纹理处理
         const VTexture* texture = brush.mTexture;
         if (!texture) return QBrush();
-        
+
         QImage img(
             reinterpret_cast<uchar*>(texture->mBitmap.data()),
             texture->mBitmap.width(),
@@ -280,7 +323,7 @@ QBrush VPainterQt::brushToQBrush(const VBrush &brush)
             texture->mBitmap.stride(),
             QImage::Format_ARGB32_Premultiplied
         );
-        
+
         return QBrush(img);
     }
     default:
@@ -311,7 +354,7 @@ void VPainterQt::drawPath(const VPath &path, const VBrush &brush)
 
     QPainterPath qPath = convertVPathToQPainterPath(path);
     if (qPath.isEmpty()) return;
-    
+
     setupQPainter(brush);
 
     // 填充绘制
@@ -323,12 +366,12 @@ void VPainterQt::drawPath(const VPath &path, const VBrush &brush, CapStyle cap, 
     if (!mQPainter || path.empty()) return;
 
     QPainterPath qPath = convertVPathToQPainterPath(path);
-    
+
     // 设置描边参数
     QPen pen;
     pen.setColor(QColor(255, 255, 255)); // 默认白色，会被brush覆盖
     pen.setWidthF(width);
-    
+
     // 转换线帽样式
     switch (cap) {
         case CapStyle::Round:
@@ -341,7 +384,7 @@ void VPainterQt::drawPath(const VPath &path, const VBrush &brush, CapStyle cap, 
             pen.setCapStyle(Qt::FlatCap);
             break;
     }
-    
+
     // 转换连接样式
     switch (join) {
         case JoinStyle::Round:
@@ -354,13 +397,13 @@ void VPainterQt::drawPath(const VPath &path, const VBrush &brush, CapStyle cap, 
             pen.setJoinStyle(Qt::MiterJoin);
             break;
     }
-    
+
     // 设置画刷颜色到画笔
     if (brush.type() == VBrush::Type::Solid) {
         VColor color = brush.mColor;
         pen.setColor(QColor(color.r, color.g, color.b, color.a));
     }
-    
+
     mQPainter->setPen(pen);
     mQPainter->drawPath(qPath);
 }
@@ -368,14 +411,14 @@ void VPainterQt::drawPath(const VPath &path, const VBrush &brush, CapStyle cap, 
 QPainterPath VPainterQt::convertVPathToQPainterPath(const VPath &path)
 {
     QPainterPath qPath;
-    
+
     if (path.empty()) return qPath;
-    
+
     const auto &elements = path.elements();
     const auto &points = path.points();
-    
+
     if (elements.empty() || points.empty()) return qPath;
-    
+
     size_t pointIndex = 0;
     for (VPath::Element element : elements) {
         switch (element) {
@@ -385,14 +428,14 @@ QPainterPath VPainterQt::convertVPathToQPainterPath(const VPath &path)
                     pointIndex++;
                 }
                 break;
-                
+
             case VPath::Element::LineTo:
                 if (pointIndex < points.size()) {
                     qPath.lineTo(points[pointIndex].x(), points[pointIndex].y());
                     pointIndex++;
                 }
                 break;
-                
+
             case VPath::Element::CubicTo:
                 if (pointIndex + 2 < points.size()) {
                     qPath.cubicTo(
@@ -403,20 +446,20 @@ QPainterPath VPainterQt::convertVPathToQPainterPath(const VPath &path)
                     pointIndex += 3;
                 }
                 break;
-                
+
             case VPath::Element::Close:
                 qPath.closeSubpath();
                 break;
         }
     }
-    
+
     return qPath;
 }
 
 void VPainterQt::setupQPainter(const VBrush &brush)
 {
     if (!mQPainter) return;
-    
+
     switch (brush.type()) {
         case VBrush::Type::Solid: {
             VColor color = brush.mColor;
@@ -442,4 +485,4 @@ void VPainterQt::setupQPainter(const VBrush &brush)
 
 V_END_NAMESPACE
 
-#endif // LOTTIE_QT 
+#endif // LOTTIE_QT

@@ -71,12 +71,6 @@
 #define VECTOR_FALLTHROUGH
 #endif
 
-#ifdef LOTTIE_THREAD_SUPPORT
-#define vthread_local thread_local
-#else
-#define vthread_local
-#endif
-
 #if defined(_MSC_VER)
     #define V_ALWAYS_INLINE __forceinline
 #else
@@ -97,17 +91,17 @@ V_CONSTEXPR inline const T &vMax(const T &a, const T &b)
 static const double EPSILON_DOUBLE = 0.000000000001f;
 static const float  EPSILON_FLOAT = 0.000001f;
 
-static inline bool vCompare(float p1, float p2)
+V_UNUSED static inline bool vCompare(float p1, float p2)
 {
     return (std::abs(p1 - p2) < EPSILON_FLOAT);
 }
 
-static inline bool vIsZero(float f)
+V_UNUSED static inline bool vIsZero(float f)
 {
     return (std::abs(f) <= EPSILON_FLOAT);
 }
 
-static inline bool vIsZero(double f)
+V_UNUSED static inline bool vIsZero(double f)
 {
     return (std::abs(f) <= EPSILON_DOUBLE);
 }

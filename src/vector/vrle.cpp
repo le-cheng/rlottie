@@ -651,14 +651,13 @@ static size_t _opGeneric(rle_view &a, rle_view &b, Result &result,
 }
 
 /*
- * this api makes use of thread_local temporary
+ * this api makes use of static temporary
  * buffer to avoid creating intermediate temporary rle buffer
  * the scratch buffer object will grow its size on demand
  * so that future call won't need any more memory allocation.
- * this function is thread safe as it uses thread_local variable
- * which is unique per thread.
+ * Note: This is now single-threaded only (thread_local removed).
  */
-static vthread_local VRle::Data Scratch_Object;
+static VRle::Data Scratch_Object;
 
 VRle VRle::opGeneric(const VRle &o, Data::Op op) const
 {

@@ -30,7 +30,6 @@ using namespace rlottie::internal;
 
 #ifdef LOTTIE_CACHE_SUPPORT
 
-#include <mutex>
 #include <unordered_map>
 
 class ModelCache {
@@ -42,7 +41,6 @@ public:
     }
     std::shared_ptr<model::Composition> find(const std::string &key)
     {
-        std::lock_guard<std::mutex> guard(mMutex);
 
         if (!mcacheSize) return nullptr;
 
@@ -52,7 +50,6 @@ public:
     }
     void add(const std::string &key, std::shared_ptr<model::Composition> value)
     {
-        std::lock_guard<std::mutex> guard(mMutex);
 
         if (!mcacheSize) return;
 
@@ -65,7 +62,6 @@ public:
 
     void configureCacheSize(size_t cacheSize)
     {
-        std::lock_guard<std::mutex> guard(mMutex);
         mcacheSize = cacheSize;
 
         if (!mcacheSize) mHash.clear();
@@ -75,7 +71,6 @@ private:
     ModelCache() = default;
 
     std::unordered_map<std::string, std::shared_ptr<model::Composition>> mHash;
-    std::mutex                                                           mMutex;
     size_t mcacheSize{10};
 };
 

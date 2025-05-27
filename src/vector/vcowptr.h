@@ -29,7 +29,7 @@
 template <typename T>
 class vcow_ptr {
     struct model {
-        std::atomic<std::size_t> mRef{1};
+        std::size_t mRef{1}; // Single-threaded version - no atomic needed
 
         model() = default;
 

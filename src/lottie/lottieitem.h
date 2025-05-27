@@ -196,7 +196,7 @@ public:
     const LOTLayerNode *renderTree() const;
     bool                render(const rlottie::Surface &surface);
     void                setValue(const std::string &keypath, LOTVariant &value);
-    
+
     // 设置渲染后端
     void setRenderBackend(RenderType type) { mRenderBackend = type; }
     // 获取当前渲染后端

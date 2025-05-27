@@ -14,9 +14,6 @@ inc += config_dir
 
 config_h = configuration_data()
 
-if get_option('thread') == true
-    config_h.set10('LOTTIE_THREAD_SUPPORT', true)
-endif
 
 if get_option('module') == true
     config_h.set10('LOTTIE_IMAGE_MODULE_SUPPORT', true)

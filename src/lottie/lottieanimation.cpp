@@ -95,7 +95,6 @@ private:
     mutable LayerInfoList                  mLayerList;
     model::Composition *                   mModel;
     SharedRenderTask                       mTask;
-    std::atomic<bool>                      mRenderInProgress;
     std::unique_ptr<renderer::Composition> mRenderer{nullptr};
 };
 
@@ -128,19 +127,11 @@ bool AnimationImpl::update(size_t frameNo, const VSize &size,
 Surface AnimationImpl::render(size_t frameNo, const Surface &surface,
                               bool keepAspectRatio)
 {
-    bool renderInProgress = mRenderInProgress.load();
-    if (renderInProgress) {
-        vCritical << "Already Rendering Scheduled for this Animation";
-        return surface;
-    }
-
-    mRenderInProgress.store(true);
     update(
         frameNo,
         VSize(int(surface.drawRegionWidth()), int(surface.drawRegionHeight())),
         keepAspectRatio);
     mRenderer->render(surface);
-    mRenderInProgress.store(false);
 
     return surface;
 }
@@ -149,7 +140,6 @@ void AnimationImpl::init(std::shared_ptr<model::Composition> composition)
 {
     mModel = composition.get();
     mRenderer = std::make_unique<renderer::Composition>(composition);
-    mRenderInProgress = false;
     
     // 设置为全局默认渲染后端
     if (gDefaultRenderBackend != RenderBackend::CPU) {
@@ -157,95 +147,6 @@ void AnimationImpl::init(std::shared_ptr<model::Composition> composition)
     }
 }
 
-#ifdef LOTTIE_THREAD_SUPPORT
-
-#include <thread>
-#include "vtaskqueue.h"
-
-/*
- * Implement a task stealing schduler to perform render task
- * As each player draws into its own buffer we can delegate this
- * task to a slave thread. The scheduler creates a threadpool depending
- * on the number of cores available in the system and does a simple fair
- * scheduling by assigning the task in a round-robin fashion. Each thread
- * in the threadpool has its own queue. once it finishes all the task on its
- * own queue it goes through rest of the queue and looks for task if it founds
- * one it steals the task from it and executes. if it couldn't find one then it
- * just waits for new task on its own queue.
- */
-class RenderTaskScheduler {
-    const unsigned           _count{std::thread::hardware_concurrency()};
-    std::vector<std::thread> _threads;
-    std::vector<TaskQueue<SharedRenderTask>> _q{_count};
-    std::atomic<unsigned>                    _index{0};
-
-    void run(unsigned i)
-    {
-        while (true) {
-            bool             success = false;
-            SharedRenderTask task;
-            for (unsigned n = 0; n != _count * 2; ++n) {
-                if (_q[(i + n) % _count].try_pop(task)) {
-                    success = true;
-                    break;
-                }
-            }
-            if (!success && !_q[i].pop(task)) break;
-
-            auto result = task->playerImpl->render(task->frameNo, task->surface,
-                                                   task->keepAspectRatio);
-            task->sender.set_value(result);
-        }
-    }
-
-    RenderTaskScheduler()
-    {
-        for (unsigned n = 0; n != _count; ++n) {
-            _threads.emplace_back([&, n] { run(n); });
-        }
-
-        IsRunning = true;
-    }
-
-public:
-    static bool IsRunning;
-
-    static RenderTaskScheduler &instance()
-    {
-        static RenderTaskScheduler singleton;
-        return singleton;
-    }
-
-    ~RenderTaskScheduler() { stop(); }
-
-    void stop()
-    {
-        if (IsRunning) {
-            IsRunning = false;
-
-            for (auto &e : _q) e.done();
-            for (auto &e : _threads) e.join();
-        }
-    }
-
-    std::future<Surface> process(SharedRenderTask task)
-    {
-        auto receiver = std::move(task->receiver);
-        auto i = _index++;
-
-        for (unsigned n = 0; n != _count; ++n) {
-            if (_q[(i + n) % _count].try_push(std::move(task))) return receiver;
-        }
-
-        if (_count > 0) {
-            _q[i % _count].push(std::move(task));
-        }
-
-        return receiver;
-    }
-};
-
-#else
 class RenderTaskScheduler {
 public:
     static bool IsRunning;
@@ -266,8 +167,6 @@ public:
         return std::move(task->receiver);
     }
 };
-
-#endif
 
 bool RenderTaskScheduler::IsRunning{false};
 
@@ -482,15 +381,6 @@ void Surface::setDrawRegion(size_t x, size_t y, size_t width, size_t height)
     mDrawArea.h = height;
 }
 
-namespace {
-void lottieShutdownRenderTaskScheduler()
-{
-    if (RenderTaskScheduler::IsRunning) {
-        RenderTaskScheduler::instance().stop();
-    }
-}
-}  // namespace
-
 // private apis exposed to c interface
 void lottie_init_impl()
 {
@@ -501,7 +391,6 @@ extern void lottieShutdownRasterTaskScheduler();
 
 void lottie_shutdown_impl()
 {
-    lottieShutdownRenderTaskScheduler();
     lottieShutdownRasterTaskScheduler();
 }
 

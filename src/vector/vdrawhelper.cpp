@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <climits>
 #include <cstring>
-#include <mutex>
 #include <unordered_map>
 #include <array>
 
@@ -60,34 +59,31 @@ public:
             hash_val +=
                 VCacheKey(stops[i].second.premulARGB() * gradient.alpha());
 
-        {
-            std::lock_guard<std::mutex> guard(mMutex);
 
-            size_t count = mCache.count(hash_val);
-            if (!count) {
-                // key is not present in the hash
-                info = addCacheElement(hash_val, gradient);
-            } else if (count == 1) {
-                auto search = mCache.find(hash_val);
-                if (search->second->stops == stops) {
-                    info = search->second;
-                } else {
-                    // didn't find an exact match
-                    info = addCacheElement(hash_val, gradient);
-                }
+        size_t count = mCache.count(hash_val);
+        if (!count) {
+            // key is not present in the hash
+            info = addCacheElement(hash_val, gradient);
+        } else if (count == 1) {
+            auto search = mCache.find(hash_val);
+            if (search->second->stops == stops) {
+                info = search->second;
             } else {
-                // we have a multiple data with same key
-                auto range = mCache.equal_range(hash_val);
-                for (auto it = range.first; it != range.second; ++it) {
-                    if (it->second->stops == stops) {
-                        info = it->second;
-                        break;
-                    }
+                // didn't find an exact match
+                info = addCacheElement(hash_val, gradient);
+            }
+        } else {
+            // we have a multiple data with same key
+            auto range = mCache.equal_range(hash_val);
+            for (auto it = range.first; it != range.second; ++it) {
+                if (it->second->stops == stops) {
+                    info = it->second;
+                    break;
                 }
-                if (!info) {
-                    // didn't find an exact match
-                    info = addCacheElement(hash_val, gradient);
-                }
+            }
+            if (!info) {
+                // didn't find an exact match
+                info = addCacheElement(hash_val, gradient);
             }
         }
         return info;
@@ -121,7 +117,6 @@ private:
     VGradientCache() = default;
 
     VGradientColorTableHash mCache;
-    std::mutex              mMutex;
 };
 
 bool VGradientCache::generateGradientColorTable(const VGradientStops &stops,
